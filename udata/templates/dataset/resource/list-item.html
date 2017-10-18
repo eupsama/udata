@@ -1,38 +1,88 @@
 {% set resource_format = resource.format|trim|lower or 'data' %}
-<div id="resource-{{resource.id}}" class="list-group-item"
-    data-checkurl="{{ url_for('api.checkurl') }}"
-    @click="showResource('{{resource.id}}', $event, {{ resource.owner is defined|tojson }})">
-    <div class="format-label pull-left" v-tooltip tooltip-placement="left">
-        <span class="ellipsis" data-format="{{ resource_format }}">
-            {{ resource_format }}
-        </span>
-    </div>
-    <h4 class="list-group-item-heading ellipsis">
-        <a href="{{resource.url}}">
-            <span>{{ resource.title or _('Nameless resource') }}</span>
-        </a>
-    </h4>
-    <p class="list-group-item-text ellipsis">
-        {{ _('Last modified on %(date)s',
-            date=resource.modified|dateformat('full'),
-        ) }}
-    </p>
-    {% if resource.owner or resource.organization %}
-    {{ resource|owner_avatar(52, 'resource-owner') }}
-    {% endif %}
+{% set format_icon = 'fa-file-o'%}
+{% set availability = 'maybe' %}
 
-    {% if can_edit_resource(resource if resource.from_community else dataset) %}
-        {% if resource.from_community %}
-            {% set edit_path = 'dataset/{id}/community-resource/{rid}' %}
-        {% else %}
-            {% set edit_path = 'dataset/{id}/resource/{rid}' %}
-        {% endif %}
-        <div class="btn-group btn-group-xs tools">
-            <a class="btn btn-default btn-edit" v-tooltip title="{{ _('Edit') }}"
-                href="{{ url_for('admin.index', path=edit_path.format(id=dataset.id, rid=resource.id)) }}">
-                <span class="fa fa-pencil"></span>
-            </a>
+{% if resource.is_available == True %}
+{% set availability = 'ok' %}
+{% elif resource.is_available == False %}
+{% set availability = 'unavailable' %}
+{% endif %}
+
+{% if resource_format in ['html','js','py'] %}
+{% set format_icon = 'fa-file-code-o' %}
+{% elif resource_format in ['xls','xlsx','csv','tsv','ods'] %}
+{% set format_icon = 'fa-file-excel-o' %}
+{% elif resource_format in ['zip','7z','rar','xz','gz'] %}
+{% set format_icon = 'fa-file-archive-o' %}
+{% elif resource_format in ['txt','md','adoc','markdown'] %}
+{% set format_icon = 'fa-file-text-o' %}
+{% elif resource_format in ['pdf'] %}
+{% set format_icon = 'fa-file-pdf-o' %}
+{% endif %}
+<article id="resource-{{resource.id}}" class="card resource-card"
+    data-checkurl="{{ url_for('api.checkurl') }}">
+    <div class="row">
+        <div class="col-xs-12">
+            <h4 class="ellipsis">
+                {{ resource.title or _('Nameless resource') }}
+            </h4>
+
+            <div class="resource-item__description">{{ resource.description }}</div>
         </div>
-    {% endif %}
+    </div>
 
-</div>
+    <div class="row" style="margin-top: .5em">
+        <div class="col-xs-6 resource-metadata">
+            <span class="btn-healtheck btn-healtheck--{{ availability }}">
+                <span class="fa fa-circle" v-tooltip title="{{ _('Resource healthcheck: %(status)s', status=availability) }}"></span>
+                <span class="fa {{ format_icon }}" v-tooltip title="{{ _('File format: %(format)s', format=resource.format) }}"></span>
+            </span>
+            <span class="filesize">{{ resource.filesize or '1,5Go' }}</span>
+            •
+            <span class="fa fa-cloud-download" v-tooltip title="{{ _('%(count)d downloads', count=resource.metrics.views) }}"></span>
+            {{ resource.metrics.views }}
+            {% if dataset.temporal_coverage %}
+            •
+            <span class="fa fa-calendar" v-tooltip title="{{ _('From %(start)s to %(end)s', start=dataset.temporal_coverage.start, end=dataset.temporal_coverage.end) }}"></span>
+            {{ dataset.temporal_coverage | daterange }}
+            {% endif %}
+        </div>
+        <div class="col-xs-6 text-right">
+            <div class="btn-group">
+                {% if resource.can_be_projected %}
+                <a href="{{ resource.latest }}" class="btn btn-primary" download>{{ _('Download subset') }}</a>
+                {% else %}
+                <a href="{{ resource.latest }}" class="btn btn-primary" download>{{ _('Download') }}</a>
+                {% endif %}
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                  </button>
+                  <ul class="dropdown-menu">
+                    {% if resource.can_be_projected %}
+                    <li><a href="#"><span class="fa fa-dot-circle-o"></span> {{ _('Download a subset for <strong>%(territory)s</strong>', territory='Arles') }}</a></li>
+                    {% endif %}
+                    <li><a href="#"><span class="fa fa-circle"></span> {{ _('Download the entire resource') }}</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#"><span class="fa fa-question-circle"></span> {{ _('Ask a question about this resource') }}</a></li>
+                    <li><a href="#"><span class="fa fa-exclamation-triangle"></span> {{ _('Report an issue with this resource') }}</a></li>
+                  </ul>
+                <button class="btn btn-default" v-tooltip title="{{ _('Copy permalink to clipboard') }}">
+                    <span class="fa fa-clipboard"></span>
+                </button>
+            {% if can_edit_resource(resource if resource.from_community else dataset) %}
+                {% if resource.from_community %}
+                    {% set edit_path = 'dataset/{id}/community-resource/{rid}' %}
+                {% else %}
+                    {% set edit_path = 'dataset/{id}/resource/{rid}' %}
+                {% endif %}
+                <a class="btn btn-success" v-tooltip title="{{ _('Edit this resource') }}"
+                    href="{{ url_for('admin.index', path=edit_path.format(id=dataset.id, rid=resource.id)) }}">
+                    <span class="fa fa-pencil"></span>
+                </a>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+
+</article>

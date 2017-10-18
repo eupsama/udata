@@ -5,6 +5,7 @@ from datetime import date, datetime
 import unicodedata
 
 from flask import abort, current_app, redirect, url_for
+from mongoengine.queryset.visitor import Q
 
 from udata import theme
 from udata.auth import current_user
@@ -108,14 +109,9 @@ def render_territory(territory):
             level=territory.level, ancestors__contains=territory.id)
 
     # Only display dynamic datasets for present territories.
-    base_datasets = []
-    if is_present_territory:
-        DATASETS = TERRITORY_DATASETS[territory.level_code]
-        base_dataset_classes = sorted(DATASETS.values(), key=lambda a: a.order)
-        base_datasets = [
-            base_dataset_class(territory)
-            for base_dataset_class in base_dataset_classes
-        ]
+    base_datasets = TERRITORY_DATASETS[territory.level_code].values()
+    base_datasets_ids = [d.dataset_id for d in base_datasets]
+
     territories = [territory]
 
     # Deal with territories with ancestors.
@@ -126,27 +122,18 @@ def render_territory(territory):
     # by an org for that zone and others. We need to know if the current
     # user has datasets for that zone in order to display a custom
     # message to ease the conversion.
-    datasets = Dataset.objects(spatial__zones__in=territories).visible()
-    # Retrieving datasets from old regions.
-    territory_datasets = []
-    other_datasets = []
-    editable_datasets = []
-    if datasets:
-        for dataset in datasets:
-            if (dataset.organization and
-                    territory.id == dataset.organization.zone):
-                territory_datasets.append(dataset)
-            else:
-                other_datasets.append(dataset)
-            editable_datasets.append(current_user.is_authenticated and
-                                     DatasetEditPermission(dataset).can())
+    datasets = Dataset.objects(
+        Q(spatial__zones__in=territories) |
+        Q(id__in=base_datasets_ids)
+    ).visible()
+
+    publishers = map(lambda d: d.owner or d.organization, datasets)
+
     context = {
         'territory': territory,
-        'present_territory': present_territory,
-        'base_datasets': base_datasets,
-        'other_datasets': other_datasets,
-        'has_pertinent_datasets': any(editable_datasets),
-        'territory_datasets': territory_datasets
+        'publishers': publishers,
+        'datasets': datasets,
+        'present_territory': present_territory
     }
     template = 'territories/{level_name}.html'.format(
         level_name=territory.level_name)

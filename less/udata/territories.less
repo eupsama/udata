@@ -1,3 +1,20 @@
+@import './search.less';
+
+.avatar-pills {
+    > li{
+        margin-bottom: 5px;
+        margin-right: -20px;
+    }
+
+    img {
+        background: #fff;
+        border: 1px solid #aaa;
+        padding: 1px;
+        min-width: 30px;
+        max-width: 30px;
+    }
+}
+
 .territory {
     .territory-announcement {
         padding: 1em;
@@ -54,6 +71,11 @@
         }
     }
 }
+
+.form-group.disabled {
+    color: @gray-light;
+}
+
 .territories-list li img {
     margin-right: 4px;
 }

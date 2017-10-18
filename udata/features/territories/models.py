@@ -23,6 +23,8 @@ class TerritoryDataset(object):
     id = ''
     title = ''
     organization_id = ''
+    dataset_id = ''
+    resource_id = ''
     url_template = ''
     description = ''
     license_id = 'fr-lo'

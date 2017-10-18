@@ -216,18 +216,33 @@
 {% set default_action = url_for('search.index') %}
 {% set default_placeholder = _('Search') %}
 {% macro site_search(action=default_action, placeholder=default_placeholder, territory=None, size=None, class=None) -%}
-<site-search v-ref:search action="{{ action }}" placeholder="{{ placeholder }}"
-    {% if class %}class="{{ class }}"{% endif %}
-    {% if size %}size="{{ size }}"{% endif %}
-    {% if territory %}territory-id="{{ territory.id }}"{% endif %}>
-    <form class="site-search{% if class %} {{ class }}{% endif %}" action="{{ action }}">
-        <div class="input-group {% if size %}input-group-{{ size }}{% endif%}">
-            <div class="input-group-btn">
-                <button class="btn" type="submit"><i class="fa fa-search"></i></button>
-            </div>
-            <label for="search" class="hidden">{{ placeholder }}</label>
-            <input id="search" name="q" type="search" class="form-control" placeholder="{{ placeholder }}" />
+<form class="site-search{% if class %} {{ class }}{% endif %}" action="{{ action or default_action }}">
+    <div class="input-group {% if size %}input-group-{{ size }}{% endif%}">
+        <span class="input-group-addon">
+            <i class="fa fa-search"></i>
+        </span>
+        <label for="search" class="hidden">{{ placeholder }}</label>
+        <input id="search" name="q" type="search" class="form-control" placeholder="{{ _('Name of a dataset, location or publisher…') }}" />
+        <div class="input-group-btn">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="fa fa-crosshairs active"></span>
+                <span class="fa fa-tags"></span>
+                {{ _('Filters') }} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="#">...</a></li>
+                <li><a href="#">... ... ...</a></li>
+                <li><a href="#">... ...</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">...</a></li>
+            </ul>
         </div>
-    </form>
-</site-search>
+        <div class="input-group-btn">
+            <button class="btn btn-primary" type="button">
+                {{ default_placeholder }}
+                <span class="fa fa-arrow-right"></span>
+            </button>
+        </div>
+    </div>
+</form>
 {%- endmacro %}

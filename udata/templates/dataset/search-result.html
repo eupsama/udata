@@ -1,11 +1,15 @@
 {% cache cache_duration, 'dataset-search-result', dataset.id|string, g.lang_code %}
 {% from theme('macros/certified.html') import badge_if_certified with context %}
-<li class="search-result dataset-result">
-    <a href="{{ url_for('datasets.show', dataset=dataset) }}" title="{{ dataset.title }}">
+{% set logo=dataset.organization.logo|placeholder('organization') %}
+{% if dataset.organization.logo %}
+{% set logo = 'https://data.gouv.fr/s/{}'.format(dataset.organization.logo(70)) %}
+{% endif %}
+<article class="search-result dataset-result">
+    <a href="{{ url_for('datasets.show', dataset=dataset, territory='commune:13004') }}" title="{{ dataset.title }}">
         {% if dataset.organization %}
         <div class="result-logo pull-left">
             <img alt="{{ dataset.organization.title }}"
-                src="{{ dataset.organization.logo(70)|placeholder('organization') }}"
+                src="{{ logo }}"
                 width="70" height="70">
         </div>
         {{ badge_if_certified(dataset.organization) }}
@@ -111,5 +115,5 @@
 
         </ul>
     </a>
-</li>
+</article>
 {% endcache %}

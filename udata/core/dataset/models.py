@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import httplib
+import udata.models
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
@@ -181,6 +182,15 @@ class ResourceMixin(object):
         """Return True if the specified format is in CLOSED_FORMATS."""
         return self.format.lower() in CLOSED_FORMATS
 
+    @property
+    def can_be_projected(self):
+        from udata.models import TERRITORY_DATASETS
+        ids = [r.resource_id or None for level in TERRITORY_DATASETS.itervalues()
+                             for r in level.itervalues()
+              ]
+
+        return str(self.id) in ids
+
     def check_availability(self, group):
         """Check if a resource is reachable against a Croquemort server.
 
@@ -341,6 +351,14 @@ class Dataset(WithMetrics, BadgeMixin, db.Owned, db.Document):
         return url_for('datasets.show', dataset=self, *args, **kwargs)
 
     display_url = property(url_for)
+
+    @property
+    def can_be_projected(self):
+        for resource in self.resources:
+            if resource.can_be_projected:
+                return True
+
+        return False
 
     @property
     def external_url(self):

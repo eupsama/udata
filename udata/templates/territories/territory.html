@@ -24,48 +24,32 @@
 
 {% if not territory_datasets %}
 <div class="row">
-    <div class="col-sm-12">
-        <div class="dataset-item--cta bg-primary">
-            <div class="format-label pull-left">+</div>
-            <p>
-                {% if current_user.is_authenticated %}
-                    {% if has_pertinent_datasets %}
-                        {{ _('Some of your datasets have an exact match!') }}<br/>
-                        <a href="m&#x61;ilto:{{ config.TERRITORIES_EMAIL|obfuscate|safe }}">
-                            {{ _('Claim that territory') }}</a> {{ _('and your datasets will appear first.') }}
-                    {% else %}
-                        {{ _('If you want your datasets to appear in that list, the geographical zone associated must be the exact same one of that territory (%(code)s).', code=territory.code) }}
-                    {% endif %}
-                {% else %}
-                    {{ _('You want to add your own datasets to that list?') }}<br/>
-                    <a title="{{ _('Sign In / Register') }}"
-                        href="{{ url_for('security.login', next=request.url) }}">
-                        {{ _('Log in') }}</a>
-                    {{ _('and create resources for that territory.') }}
-                {% endif %}
-            </p>
-        </div>
+    <div class="col-xs-10">
+        <h2>{{ _('Territory actors') }}</h2>
+
+        <ul class="list-unstyled list-inline avatar-pills">
+            {% for publisher in publishers if publisher.logo %}
+            {% set logo=publisher|placeholder('organization') %}
+            {% if publisher.logo %}
+            {% set logo = 'https://data.gouv.fr/s/{}'.format(publisher.logo(30)) %}
+            {% endif %}
+            <li><img src="{{ logo }}" alt="" class="img-circle" v-tooltip title="{{ publisher.name }}"></li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
 {% endif %}
 
 <div class="row dataset-list">
-        {% if territory_datasets %}
-            {% for dataset in territory_datasets %}
-                <div data-udata-dataset-id="{{ dataset.id }}" class="col-sm-4"></div>
-            {% endfor %}
-        {% endif %}
-
-        {% for dataset in base_datasets %}
-            <div data-udata-territory-id="{{ dataset.slug }}" class="col-sm-4"></div>
+    <div class="col-xs-12">
+        <h2>{{ _('Territory datasets') }}</h2>
+    </div>
+    {% if datasets %}
+    <ul class="card-list">
+        {% for dataset in datasets %}
+        <li class="col-sm-6">{% include theme('dataset/card.html') %}</li>
         {% endfor %}
-
-        {% for dataset in other_datasets %}
-            <div data-udata-dataset-id="{{ dataset.id }}" class="col-sm-4"></div>
-        {% endfor %}
+    </ul>
+    {% endif %}
 </div>
-{% endblock %}
-
-{% block extra_js %}
-    <script src="{{ static('widgets.js', _burst=False) }}" id="udata" async defer onload="udataScript.loadDatasets()"></script>
 {% endblock %}

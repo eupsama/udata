@@ -4,7 +4,7 @@
 
 .card {
     background-color: white;
-    border: 1px solid darken(@gray-lighter, 10%);
+    border: 1px solid darken(@gray-lighter, 16%);
     margin-bottom: 10px;
 
     @card-font-size: 14px;
@@ -15,8 +15,6 @@
     @footer-line-height: 25px;
 
     position: relative;
-    background: white;
-    border: 1px solid @gray-lighter;
     padding: @card-padding;
 
     zoom: 1;
@@ -48,38 +46,24 @@
     }
 
     .card-body {
-        overflow: hidden;
         padding-top: 1px;
-        padding-left: 11px;
-        // padding-left: @card-padding;
+        padding-left: @logo-size + (2 * @logo-margin) + @card-padding;
         color: #4f4f4f;
         font-size: @card-font-size;
         line-height: 1.3em;
-        height: @logo-size + 2 * @logo-margin;
+        min-height: 6em;
+        margin-bottom: 2.5em;
     }
 
     footer {
-        @color: #7E7E7E;
-        width: 100%;
-        position: absolute;
-        // padding-left: @logo-size + 2 * @logo-margin + @card-padding;
-        padding-left: 78px;
-        padding-right: 2 * @logo-margin;
-        // bottom: 0;
-        bottom: -4px;
-        padding-bottom: @card-padding;
-        overflow: hidden;
+        .clamp(1);
 
-        > * {
-            height: 100%;
-            max-width: 100%;
-            line-height: @footer-line-height;
-            font-weight: bold;
-            font-size: @card-font-size - 1px;
-            margin: 0;
-            // padding: 0;
-            padding: 0 5px;
-        }
+        @color: #7E7E7E;
+        position: absolute;
+        width: 100%;
+        padding: @card-padding;
+        padding-left: @logo-size + (2 * @logo-margin) + @card-padding;
+        bottom: 0;
 
         ul {
             list-style: none;
@@ -144,11 +128,12 @@
     }
 
     h4 {
-        margin: 0 0 8px;
-        line-height: 11px;
+        font-size: 16px;
+        line-height: inherit;
+        margin-top: 0;
+        .clamp(1);
 
         a {
-            font-size: 13px;
             color: #494949;
             font-family: @title-font;
             font-weight: bold;
@@ -182,6 +167,10 @@
 
     &.dataset-card {
         border-bottom: 2px solid #4FA9E5;
+    }
+
+    &.resource-card {
+        border-bottom: 2px solid brown;
     }
 
     &.reuse-card {

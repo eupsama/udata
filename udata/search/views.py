@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from flask import request
+from flask import request, url_for, redirect, current_app
+from mongoengine.queryset.visitor import Q
 
 from udata import search, theme
-from udata.models import Dataset, Organization, Reuse
+from udata.models import Dataset, Organization, Reuse, GeoZone
 from udata.utils import multi_to_dict
 from udata.features.territories import check_for_territories
 from udata.i18n import I18nBlueprint
@@ -22,6 +23,17 @@ MAPPING = {
 @blueprint.route('/search/', endpoint='index')
 def render_search():
     params = multi_to_dict(request.args)
+
+    levels = current_app.config.get('HANDLED_LEVELS')
+
+    geo = GeoZone.objects(
+        Q(name__iexact=params.get('q')) &
+        Q(level__in=levels)
+    ).order_by('-population', '-area').first()
+
+    if geo:
+        return redirect(url_for('territories.territory', territory=geo))
+
     params['facets'] = True
     # We only fetch relevant data for the given filter.
     if 'tag' in params:

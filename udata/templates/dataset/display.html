@@ -83,24 +83,50 @@
                     </div>
                 </div>
 
-                <div class="list-group resources-list">
-                    <h3>{{ _('Resources') }}</h3>
+                <div class="row" id="resources">
+                    <div class="col-xs-12 col-sm-7">
+                        <h3>
+                            {{ _('Resources') }}
+                            <small>
+                                • <a href="#community-resources">
+                                    {{ _('Jump to Community Resources') }}
+                                </a>
+                            </small>
+                        </h3>
+                    </div>
+                    <div class="col-xs-12 col-sm-5" style="text-align: right; padding-top: 20px">
+                        <form action="" class="form-inline">
+                            <div class="form-group {{ 'disabled ' if not dataset.can_be_projected }}">
+                                <label for="">{{ _('Filter by location') }}</label>
+                                <input type="text" class="form-control" {% if dataset.can_be_projected %}value="Arles"{% else %}readonly{% endif %}>
+                                <span class="fa fa-level-down"></span>
+                            </div>
+                        </form>
+                    </div>
 
-                    {# TODO: extract max_resources conf #}
-                    {% set max_resources = 6 %}
-                    {% for resource in dataset.resources %}
-                        {% if loop.index0 == max_resources %}
-                        <div id="collapsed-resources" class="collapse">
+                    <div class="row resources-list">
+                        {% if dataset.resources.length == 0 %}
+                        <p class="text-center">{{ _('No resources') }}</p>
                         {% endif %}
-                        {% include theme('dataset/resource/list-item.html') %}
-                    {% else %}
-                    <p class="text-center">{{ _('No resources') }}</p>
-                    {% endfor %}
 
-                    {% if dataset.resources|length > max_resources %}
+                        {% for resource in dataset.resources[0:6] %}
+                        <div class="col-xs-12">
+                            {% include theme('dataset/resource/list-item.html') %}
                         </div>
+                        {% endfor %}
 
-                        <p class="text-center expander">
+                        {% if can_edit %}
+                        <!-- <a class="list-group-item add"
+                            href="{{ url_for('admin.index', path='dataset/{id}/'.format(id=dataset.id), **{'new_resource': ''}) }}">
+                            <div class="format-label pull-left">+</div>
+                            <h4 class="list-group-item-heading">
+                                {{ _('Add a resource') }}
+                            </h4>
+                        </a> -->
+                        {% endif %}
+
+                        {% if dataset.resources|count > 6 %}
+                        <p class="text-center col-xs-12">
                             <button id="more-resources" type="button" class="btn btn-default"
                                 data-toggle="collapse" href="#collapsed-resources"
                                 @click.prevent="expandResources($event)">
@@ -108,18 +134,16 @@
                                 {{ _('See the %(nb)d resources', nb=dataset.resources|length) }}
                             </button>
                         </p>
-                    {% endif %}
+                        {% endif %}
 
-                    {% if can_edit %}
-                    <a class="list-group-item add"
-                        href="{{ url_for('admin.index', path='dataset/{id}/'.format(id=dataset.id), **{'new_resource': ''}) }}">
-                        <div class="format-label pull-left">+</div>
-                        <h4 class="list-group-item-heading">
-                            {{ _('Add a resource') }}
-                        </h4>
-                    </a>
-                    {% endif %}
-
+                        <div id="collapsed-resources" class="collapse">
+                            {% for resource in dataset.resources[6:] %}
+                            <div class="col-xs-12">
+                                {% include theme('dataset/resource/list-item.html') %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 {# end resources #}
 
@@ -340,9 +364,8 @@
         </div>
     </header>
 
-    <div class="container">
-
-        <h3>{{ _('Discussions') }}</h3>
+    <div class="container" id="community">
+        <h3 id="discussions">{{ _('Discussions') }}</h3>
         <div class="row">
             <discussion-threads v-ref:discussions class="col-sm-9"
                 subject-id="{{ dataset.id }}"
@@ -353,7 +376,7 @@
             </div>
         </div>
 
-        <h3>{{ _('Community resources') }}</h3>
+        <h3 id="community-resources">{{ _('Community resources') }}</h3>
         <div class="row">
             <div class="col-sm-9 list-group resources-list smaller">
             {% for resource in dataset.community_resources %}
@@ -373,7 +396,7 @@
             </div>
         </div>
 
-        <h3>{{ _('Reuses') }}</h3>
+        <h3 id="reuses">{{ _('Reuses') }}</h3>
         <div class="row">
             <div class="col-sm-9 reuses-list smaller">
                 <div class="row">
